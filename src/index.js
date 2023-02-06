@@ -1,8 +1,13 @@
 const express = require('express');
 
-const readTalkers =  require('./utils/readTalkers');
+const { readTalkers, writeTalkers } =  require('./utils/utilTalkers');
 const genToken = require('./utils/genToken');
-const { email, password } = require('./middlewares/validateLogin')
+const authToken = require('./middlewares/authToken');
+const name  = require('./middlewares/name');
+const age  = require('./middlewares/age');
+const talk  = require('./middlewares/talk');
+const watchedAT  = require('./middlewares/watchedAt');
+const rate = require('./middlewares/rate');
 
 const app = express();
 app.use(express.json());
@@ -20,7 +25,7 @@ app.listen(PORT, () => {
 });
 
 app.get('/talker', async (req, res) => {
-  const palestrantes = await readTalkers.talkers();
+  const palestrantes = await readTalkers();
 
   if(palestrantes) {
     return res.status(200).json(palestrantes);
@@ -30,7 +35,7 @@ app.get('/talker', async (req, res) => {
 
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const palestrantes =  await readTalkers.talkers();
+  const palestrantes =  await readTalkers();
 
   const chosenTalkers = palestrantes.find((palestrante) => palestrante.id === Number(id))
 
@@ -43,7 +48,7 @@ app.get('/talker/:id', async (req, res) => {
 app.post('/login', async (req, res) => { 
   const { email, password } = req.body;
   const validateEmail = (email) => email.match(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/);
-  
+
   if (!email) return res.status(400).json({ message: 'O campo "email" é obrigatório' });
   if (!validateEmail(email)) return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
   if (!password) return res.status(400).json({ message: 'O campo "password" é obrigatório' });
@@ -51,4 +56,18 @@ app.post('/login', async (req, res) => {
   
   const token = genToken();
   return res.status(200).json(token)
+});
+
+app.post('/talker', authToken, name, age, talk, rate, watchedAT, async (req, res) => {
+  const { name, age, talk } = req.body;
+  const palestrantes = await readTalkers();
+  const novoPalestrante = {
+    id: palestrantes.length + 1,
+    name,
+    age,
+    talk
+  };
+  palestrantes.push(novoPalestrante);
+  await writeTalkers([...palestrantes, req.body]);
+    return res.status(201).json(novoPalestrante);
 });
