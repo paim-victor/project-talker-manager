@@ -25,6 +25,20 @@ app.listen(PORT, () => {
   console.log('Online');
 });
 
+app.get('/talker/search', authToken, async (req, res) => {
+  const { q } = req.query;
+  const palestrantes = await readTalkers();
+  const filtraPalestrante = palestrantes
+    .filter((e) => e.name.toLowerCase().includes(q.toLowerCase()));
+
+    // const search = talkers.filter((element) => element.name.toLowerCase().includes(q.toLowerCase()));
+
+  if (!q) return res.status(200).json(palestrantes);
+  if (!filtraPalestrante) return res.status(200).json([]);
+
+  return res.status(200).json(filtraPalestrante);
+});
+
 app.get('/talker', async (req, res) => {
   const palestrantes = await readTalkers();
 
@@ -67,9 +81,9 @@ app.post('/talker',
       age,
       talk,
     };
-    palestrantes.push(novoPalestrante);
-    await writeTalkers([...palestrantes, req.body]);
-      return res.status(201).json(novoPalestrante);
+    // palestrantes.push(novoPalestrante);
+    await writeTalkers([...palestrantes, novoPalestrante]);
+    return res.status(201).json(novoPalestrante);
 });
 
 app.put('/talker/:id', authToken, validName, validAge, 
@@ -77,6 +91,7 @@ app.put('/talker/:id', authToken, validName, validAge,
   const { id } = req.params;
   const { name, age, talk } = req.body;
   const palestrantes = await readTalkers();
+
   palestrantes[Number(id)] = { 
     id: Number(id),
     name,
@@ -84,5 +99,15 @@ app.put('/talker/:id', authToken, validName, validAge,
     talk,
   };
   await writeTalkers(palestrantes);
+
   return res.status(200).json(palestrantes[Number(id)]);
+});
+
+app.delete('talker/:id', authToken, async (req, res) => {
+  const { id } = req.params;
+  const palestrantes = await readTalkers();
+  const filtraPalestrante = palestrantes.filter((palestrante) => palestrante.id !== +id);
+  await writeTalkers(filtraPalestrante);
+
+  return res.status(204).end();
 });
