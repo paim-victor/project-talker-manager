@@ -103,10 +103,10 @@ app.put('/talker/:id', authToken, validName, validAge,
   return res.status(200).json(palestrantes[Number(id)]);
 });
 
-app.delete('talker/:id', authToken, async (req, res) => {
+app.delete('/talker/:id', authToken, async (req, res) => {
   const { id } = req.params;
   const palestrantes = await readTalkers();
-  const filtraPalestrante = palestrantes.filter((palestrante) => palestrante.id !== +id);
+  const filtraPalestrante = palestrantes.filter((e) => e.id !== +id);
   await writeTalkers(filtraPalestrante);
 
   return res.status(204).end();
