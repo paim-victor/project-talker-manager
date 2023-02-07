@@ -71,3 +71,18 @@ app.post('/talker',
     await writeTalkers([...palestrantes, req.body]);
       return res.status(201).json(novoPalestrante);
 });
+
+app.put('/talker/:id', authToken, validName, validAge, 
+  validTalk, watchedAT, rate, async (req, res) => {
+  const { id } = req.params;
+  const { name, age, talk } = req.body;
+  const palestrantes = await readTalkers();
+  palestrantes[Number(id)] = { 
+    id: Number(id),
+    name,
+    age,
+    talk,
+  };
+  await writeTalkers(palestrantes);
+  return res.status(200).json(palestrantes[Number(id)]);
+});
