@@ -26,14 +26,12 @@ app.listen(PORT, () => {
 });
 
 app.get('/talker/search', authToken, async (req, res) => {
-  const { q } = req.query;
+  const { query } = req.query;
   const palestrantes = await readTalkers();
   const filtraPalestrante = palestrantes
-    .filter((e) => e.name.toLowerCase().includes(q.toLowerCase()));
+    .filter((e) => e.name.toLowerCase().includes(query.toLowerCase()));
 
-    // const search = talkers.filter((element) => element.name.toLowerCase().includes(q.toLowerCase()));
-
-  if (!q) return res.status(200).json(palestrantes);
+  if (!query) return res.status(200).json(palestrantes);
   if (!filtraPalestrante) return res.status(200).json([]);
 
   return res.status(200).json(filtraPalestrante);
@@ -81,7 +79,6 @@ app.post('/talker',
       age,
       talk,
     };
-    // palestrantes.push(novoPalestrante);
     await writeTalkers([...palestrantes, novoPalestrante]);
     return res.status(201).json(novoPalestrante);
 });
